@@ -742,9 +742,9 @@ export interface components {
             incidencies?: components["schemas"]["DIncidency"][];
             /** Format: float */
             totalPaid?: number;
+            overdue?: boolean;
             /** Format: float */
             remainingAmount?: number;
-            overdue?: boolean;
         };
         DPayment: {
             /** Format: int64 */
@@ -762,8 +762,8 @@ export interface components {
             liquidationId?: number;
             /** @enum {string} */
             validationStatus?: "PENDING" | "VALID" | "INVALID";
-            valid?: boolean;
             pending?: boolean;
+            valid?: boolean;
         };
         DTour: {
             /** Format: int64 */

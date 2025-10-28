@@ -1,6 +1,6 @@
 # Implementation Plan
 
-- [ ] 1. Configurar backend client con openapi-react-query
+- [x] 1. Configurar backend client con openapi-react-query
   - Descomentar y actualizar `lib/backend.ts` para usar openapi-fetch y openapi-react-query
   - Configurar fetchClient con baseUrl desde NEXT_PUBLIC_API_URL
   - Crear instancia de backend usando createClient(fetchClient)
@@ -19,32 +19,32 @@
   - Valores por defecto: page=0, size=10
   - _Requirements: 2.2, 3.2, 4.2, 5.2_
 
-- [ ] 3. Implementar hooks para Users
-  - [ ] 3.1 Crear archivo hooks/use-users.ts
+- [x] 3. Implementar hooks para Users
+  - [x] 3.1 Crear archivo hooks/use-users.ts
     - Implementar hook useUsers con paginación
     - Usar backend.useQuery('get', '/users/paginados')
     - Integrar usePagination para manejo de página y tamaño
     - _Requirements: 2.1, 2.2_
   
-  - [ ] 3.2 Implementar hook useUserById
+  - [x] 3.2 Implementar hook useUserById
     - Usar backend.useQuery('get', '/users/{id}')
     - Recibir id como parámetro
     - _Requirements: 2.5_
   
-  - [ ] 3.3 Implementar hook useCreateUser
+  - [x] 3.3 Implementar hook useCreateUser
     - Usar backend.useMutation('post', '/users')
     - Invalidar query de usuarios paginados en onSuccess
     - Mostrar toast de éxito/error
     - _Requirements: 2.1, 7.2, 7.4_
 
-- [ ] 4. Implementar hooks para Staff
-  - [ ] 4.1 Crear archivo hooks/use-staff.ts
+- [x] 4. Implementar hooks para Staff
+  - [x] 4.1 Crear archivo hooks/use-staff.ts
     - Implementar hook useStaff con paginación
     - Usar backend.useQuery('get', '/staff/paginados')
     - Integrar usePagination
     - _Requirements: 3.1, 3.2_
   
-  - [ ] 4.2 Implementar hook useStaffById
+  - [x] 4.2 Implementar hook useStaffById
     - Usar backend.useQuery('get', '/staff/{id}')
     - _Requirements: 3.4_
   
@@ -53,34 +53,34 @@
     - Recibir role como parámetro
     - _Requirements: 3.5_
   
-  - [ ] 4.4 Implementar hooks de mutación para Staff
+  - [x] 4.4 Implementar hooks de mutación para Staff
     - useCreateStaff: POST /staff
     - useCreateUserWithStaff: POST /staff/with-user
     - Invalidar queries relacionadas
     - Mostrar toast notifications
     - _Requirements: 3.1, 7.2, 7.4_
 
-- [ ] 5. Implementar hooks para Customers
-  - [ ] 5.1 Crear archivo hooks/use-customers.ts
+- [x] 5. Implementar hooks para Customers
+  - [x] 5.1 Crear archivo hooks/use-customers.ts
     - Implementar hook useCustomers con paginación
     - Usar backend.useQuery('get', '/clientes/paginados')
     - Integrar usePagination
     - _Requirements: 4.1, 4.2_
   
-  - [ ] 5.2 Implementar hook useCreateCustomer
+  - [x] 5.2 Implementar hook useCreateCustomer
     - Usar backend.useMutation('post', '/clientes')
     - Invalidar query de clientes paginados
     - Mostrar toast notifications
     - _Requirements: 4.1, 7.2, 7.4_
 
-- [ ] 6. Implementar hooks para Liquidations
-  - [ ] 6.1 Crear archivo hooks/use-liquidations.ts
+- [x] 6. Implementar hooks para Liquidations
+  - [x] 6.1 Crear archivo hooks/use-liquidations.ts
     - Implementar hook useLiquidations con paginación
     - Usar backend.useQuery('get', '/liquidations/paginated')
     - Integrar usePagination
     - _Requirements: 5.1, 5.2_
   
-  - [ ] 6.2 Implementar hook useLiquidationById
+  - [x] 6.2 Implementar hook useLiquidationById
     - Usar backend.useQuery('get', '/liquidations/{liquidationId}')
     - _Requirements: 5.4_
   
@@ -108,14 +108,14 @@
     - Mostrar toast notifications
     - _Requirements: 5.1, 7.2, 7.4_
 
-- [ ] 7. Actualizar tipos para usar api.ts como fuente única
+- [x] 7. Actualizar tipos para usar api.ts como fuente única
   - Actualizar lib/api-types.ts para re-exportar tipos desde src/lib/api/api.ts
   - Importar tipos desde components['schemas']
   - Crear type aliases para compatibilidad si es necesario
   - Eliminar definiciones de tipos duplicadas
   - _Requirements: 6.1, 6.2, 6.3, 6.4_
 
-- [ ] 8. Migrar página de Users al nuevo sistema
+- [x] 8. Migrar página de Users al nuevo sistema
   - Actualizar app/dashboard/users/page.tsx para usar useUsers hook
   - Reemplazar llamadas a fetchUsers por useUsers
   - Actualizar manejo de loading/error states usando query.isLoading y query.error
@@ -123,7 +123,7 @@
   - Probar funcionalidad completa de la página
   - _Requirements: 2.1, 2.2, 7.4_
 
-- [ ] 9. Migrar página de Staff al nuevo sistema
+- [x] 9. Migrar página de Staff al nuevo sistema
   - Actualizar app/dashboard/staff/page.tsx para usar useStaff hook
   - Reemplazar llamadas a fetchStaff por useStaff
   - Actualizar manejo de loading/error states
@@ -131,7 +131,7 @@
   - Probar funcionalidad completa
   - _Requirements: 3.1, 3.2, 7.4_
 
-- [ ] 10. Migrar página de Customers al nuevo sistema
+- [x] 10. Migrar página de Customers al nuevo sistema
   - Actualizar app/dashboard/customers/page.tsx para usar useCustomers hook
   - Reemplazar llamadas a fetchCustomers por useCustomers
   - Actualizar manejo de loading/error states
@@ -139,7 +139,7 @@
   - Probar funcionalidad completa
   - _Requirements: 4.1, 4.2, 7.4_
 
-- [ ] 11. Migrar página de Liquidations al nuevo sistema
+- [x] 11. Migrar página de Liquidations al nuevo sistema
   - Actualizar app/dashboard/liquidations/page.tsx para usar useLiquidations hook
   - Reemplazar llamadas a fetchLiquidations por useLiquidations
   - Actualizar manejo de loading/error states
@@ -172,7 +172,7 @@
     - Mostrar feedback con toast
     - _Requirements: 5.1, 7.2, 7.4_
 
-- [ ] 13. Configurar React Query Provider
+- [x] 13. Configurar React Query Provider
   - Crear o actualizar app/layout.tsx para incluir QueryClientProvider
   - Configurar QueryClient con opciones por defecto (staleTime, cacheTime, retry)
   - Envolver la aplicación con el provider
@@ -185,7 +185,7 @@
   - Actualizar enhancedFetch para loggear errores en desarrollo
   - _Requirements: 7.1, 7.2, 7.3, 7.5_
 
-- [ ] 15. Limpiar código mock
+- [x] 15. Limpiar código mock
   - Eliminar funciones mock de lib/api-client.ts
   - Eliminar archivo lib/mock-auth.ts si no se usa
   - Buscar y actualizar todas las importaciones que referencian código mock
@@ -193,7 +193,7 @@
   - Eliminar archivos mock completamente
   - _Requirements: 8.1, 8.2, 8.3, 8.4_
 
-- [ ] 16. Verificación final y testing
+- [x] 16. Verificación final y testing
   - Ejecutar build de producción para verificar tipos
   - Probar todas las páginas del dashboard manualmente
   - Verificar que paginación funciona correctamente
