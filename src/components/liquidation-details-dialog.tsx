@@ -19,6 +19,7 @@ import { FlightServiceForm } from "@/components/forms/flight-service-form";
 import { AdditionalServiceForm } from "@/components/forms/additional-service-form";
 import { PaymentForm } from "@/components/forms/payment-form";
 import { IncidencyForm } from "@/components/forms/incidency-form";
+import { useLiquidationById } from "@/hooks/use-liquidations";
 import {
   Plane,
   Hotel,
@@ -48,29 +49,54 @@ export function LiquidationDetailsDialog({
   const [showPaymentForm, setShowPaymentForm] = useState(false);
   const [showIncidencyForm, setShowIncidencyForm] = useState(false);
 
+  // Obtener los detalles completos de la liquidación desde el backend
+  const {
+    data: fullLiquidation,
+    isLoading,
+    refetch,
+  } = useLiquidationById(
+    liquidation.id || 0,
+    open // Solo hacer la petición cuando el diálogo esté abierto
+  );
+
+  // Usar los datos completos del backend si están disponibles, sino usar los datos iniciales
+  const liquidationData = fullLiquidation || liquidation;
+
+  // Debug: Ver qué datos tiene la liquidación
+  console.log("Liquidation from props:", liquidation);
+  console.log("Full liquidation from API:", fullLiquidation);
+  console.log("Tour services:", liquidationData.tour_services);
+  console.log("Hotel services:", liquidationData.hotel_services);
+  console.log("Flight services:", liquidationData.flight_services);
+  console.log("Payments:", liquidationData.payments);
+
   const handleServiceSuccess = () => {
     setActiveServiceForm(null);
+    refetch(); // Refrescar los datos de la liquidación
     onUpdate();
   };
 
   const handlePaymentSuccess = () => {
     setShowPaymentForm(false);
+    refetch(); // Refrescar los datos de la liquidación
     onUpdate();
   };
 
   const handleIncidencySuccess = () => {
     setShowIncidencyForm(false);
+    refetch(); // Refrescar los datos de la liquidación
     onUpdate();
   };
 
   const handleStatusTransition = async (newStatus: string) => {
     // TODO: Implement API call to update liquidation status
     console.log("[v0] Transitioning liquidation status to:", newStatus);
+    refetch();
     onUpdate();
   };
 
   const getNextStatus = () => {
-    switch (liquidation.status) {
+    switch (liquidationData.status) {
       case "IN_QUOTE":
         return "PENDING";
       case "PENDING":
@@ -84,15 +110,27 @@ export function LiquidationDetailsDialog({
 
   const nextStatus = getNextStatus();
 
+  if (isLoading) {
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent>
+          <div className="flex items-center justify-center p-8">
+            <p>Cargando detalles...</p>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="w-[calc(100vw-5rem)] max-w-[calc(100vw-5rem)] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center justify-between">
-            <span>Liquidación #{liquidation.id}</span>
+            <span>Liquidación #{liquidationData.id}</span>
             <div className="flex items-center gap-2">
-              <Badge>{liquidation.status}</Badge>
-              <Badge variant="outline">{liquidation.payment_status}</Badge>
+              <Badge>{liquidationData.status}</Badge>
+              <Badge variant="outline">{liquidationData.payment_status}</Badge>
               {nextStatus && (
                 <Button
                   size="sm"
@@ -118,14 +156,14 @@ export function LiquidationDetailsDialog({
               </CardHeader>
               <CardContent>
                 <p className="font-medium">
-                  {liquidation.customer?.firstName}{" "}
-                  {liquidation.customer?.lastName}
+                  {liquidationData.customer?.firstName}{" "}
+                  {liquidationData.customer?.lastName}
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  {liquidation.customer?.email}
+                  {liquidationData.customer?.email}
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  {liquidation.customer?.phoneNumber}
+                  {liquidationData.customer?.phoneNumber}
                 </p>
               </CardContent>
             </Card>
@@ -135,10 +173,10 @@ export function LiquidationDetailsDialog({
               </CardHeader>
               <CardContent>
                 <p className="font-medium">
-                  {liquidation.staff_on_charge?.user?.userName}
+                  {liquidationData.staff_on_charge?.user?.userName}
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  {liquidation.staff_on_charge?.user?.email}
+                  {liquidationData.staff_on_charge?.user?.email}
                 </p>
               </CardContent>
             </Card>
@@ -153,26 +191,28 @@ export function LiquidationDetailsDialog({
               <div>
                 <p className="text-sm text-muted-foreground">Monto Total</p>
                 <p className="text-2xl font-bold">
-                  ${liquidation.total_amount?.toFixed(2)}
+                  ${liquidationData.total_amount?.toFixed(2)}
                 </p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Tipo de Cambio</p>
                 <p className="text-2xl font-bold">
-                  {liquidation.currency_rate?.toFixed(2)}
+                  {liquidationData.currency_rate?.toFixed(2)}
                 </p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Acompañantes</p>
-                <p className="text-2xl font-bold">{liquidation.companion}</p>
+                <p className="text-2xl font-bold">
+                  {liquidationData.companion}
+                </p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Fecha Límite</p>
                 <p className="text-lg font-medium">
-                  {liquidation.payment_deadline
-                    ? new Date(liquidation.payment_deadline).toLocaleDateString(
-                        "es-PE"
-                      )
+                  {liquidationData.payment_deadline
+                    ? new Date(
+                        liquidationData.payment_deadline
+                      ).toLocaleDateString("es-PE")
                     : "-"}
                 </p>
               </div>
@@ -230,7 +270,7 @@ export function LiquidationDetailsDialog({
                   </CardHeader>
                   <CardContent>
                     <TourServiceForm
-                      liquidationId={liquidation.id!}
+                      liquidationId={liquidationData.id!}
                       onSuccess={handleServiceSuccess}
                     />
                   </CardContent>
@@ -244,7 +284,7 @@ export function LiquidationDetailsDialog({
                   </CardHeader>
                   <CardContent>
                     <HotelServiceForm
-                      liquidationId={liquidation.id!}
+                      liquidationId={liquidationData.id!}
                       onSuccess={handleServiceSuccess}
                     />
                   </CardContent>
@@ -258,7 +298,7 @@ export function LiquidationDetailsDialog({
                   </CardHeader>
                   <CardContent>
                     <FlightServiceForm
-                      liquidationId={liquidation.id!}
+                      liquidationId={liquidationData.id!}
                       onSuccess={handleServiceSuccess}
                     />
                   </CardContent>
@@ -272,7 +312,7 @@ export function LiquidationDetailsDialog({
                   </CardHeader>
                   <CardContent>
                     <AdditionalServiceForm
-                      liquidationId={liquidation.id!}
+                      liquidationId={liquidationData.id!}
                       onSuccess={handleServiceSuccess}
                     />
                   </CardContent>
@@ -281,7 +321,7 @@ export function LiquidationDetailsDialog({
 
               {/* Display existing services */}
               <div className="space-y-2">
-                {liquidation.tour_services?.map((tourService) => (
+                {liquidationData.tour_services?.map((tourService) => (
                   <Card key={tourService.id}>
                     <CardContent className="pt-6">
                       <div className="flex items-center justify-between">
@@ -328,7 +368,7 @@ export function LiquidationDetailsDialog({
                   </Card>
                 ))}
 
-                {liquidation.hotel_services?.map((hotelService) => (
+                {liquidationData.hotel_services?.map((hotelService) => (
                   <Card key={hotelService.id}>
                     <CardContent className="pt-6">
                       <div className="flex items-center justify-between">
@@ -377,7 +417,7 @@ export function LiquidationDetailsDialog({
                   </Card>
                 ))}
 
-                {liquidation.flight_services?.map((flightService) => (
+                {liquidationData.flight_services?.map((flightService) => (
                   <Card key={flightService.id}>
                     <CardContent className="pt-6">
                       <div className="flex items-center justify-between">
@@ -422,7 +462,7 @@ export function LiquidationDetailsDialog({
                   </Card>
                 ))}
 
-                {liquidation.additional_services?.map((service) => (
+                {liquidationData.additional_services?.map((service) => (
                   <Card key={service.id}>
                     <CardContent className="pt-6">
                       <div className="flex items-center justify-between">
@@ -461,7 +501,7 @@ export function LiquidationDetailsDialog({
                   </CardHeader>
                   <CardContent>
                     <PaymentForm
-                      liquidationId={liquidation.id!}
+                      liquidationId={liquidationData.id!}
                       onSuccess={handlePaymentSuccess}
                     />
                   </CardContent>
@@ -469,8 +509,9 @@ export function LiquidationDetailsDialog({
               )}
 
               <div className="space-y-2">
-                {liquidation.payments && liquidation.payments.length > 0 ? (
-                  liquidation.payments.map((payment) => (
+                {liquidationData.payments &&
+                liquidationData.payments.length > 0 ? (
+                  liquidationData.payments.map((payment) => (
                     <Card key={payment.id}>
                       <CardContent className="pt-6">
                         <div className="flex items-center justify-between">
@@ -517,7 +558,7 @@ export function LiquidationDetailsDialog({
                   </CardHeader>
                   <CardContent>
                     <IncidencyForm
-                      liquidationId={liquidation.id!}
+                      liquidationId={liquidationData.id!}
                       onSuccess={handleIncidencySuccess}
                     />
                   </CardContent>
@@ -525,9 +566,9 @@ export function LiquidationDetailsDialog({
               )}
 
               <div className="space-y-2">
-                {liquidation.incidencies &&
-                liquidation.incidencies.length > 0 ? (
-                  liquidation.incidencies.map((incidency) => (
+                {liquidationData.incidencies &&
+                liquidationData.incidencies.length > 0 ? (
+                  liquidationData.incidencies.map((incidency) => (
                     <Card key={incidency.id}>
                       <CardContent className="pt-6">
                         <div className="flex items-center justify-between">

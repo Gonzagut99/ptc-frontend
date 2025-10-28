@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Plus, Trash2 } from "lucide-react"
+import { useAddFlightService } from "@/hooks/use-liquidations"
 
 interface FlightServiceFormProps {
   liquidationId: number
@@ -31,7 +32,7 @@ interface FlightBooking {
 }
 
 export function FlightServiceForm({ liquidationId, onSuccess, onCancel }: FlightServiceFormProps) {
-  const [loading, setLoading] = useState(false)
+  const addFlightService = useAddFlightService(liquidationId)
   const [formData, setFormData] = useState({
     tariff_rate: "0.00",
     is_taxed: true,
@@ -84,17 +85,34 @@ export function FlightServiceForm({ liquidationId, onSuccess, onCancel }: Flight
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setLoading(true)
 
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-      console.log("Adding flight service to liquidation:", liquidationId, { ...formData, flight_bookings: bookings })
-      onSuccess?.()
-    } catch (error) {
-      console.error("Error adding flight service:", error)
-    } finally {
-      setLoading(false)
+    const payload = {
+      tariff_rate: parseFloat(formData.tariff_rate),
+      is_taxed: formData.is_taxed,
+      currency: formData.currency,
+      flight_bookings: bookings.map(booking => ({
+        origin: booking.origin,
+        destiny: booking.destiny,
+        departure_date: booking.departure_date,
+        arrival_date: booking.arrival_date,
+        aeroline: booking.aeroline,
+        aeroline_booking_code: booking.aeroline_booking_code,
+        costamar_booking_code: booking.costamar_booking_code,
+        tkt_numbers: booking.tkt_numbers,
+        status: booking.status,
+        total_price: parseFloat(booking.total_price),
+        currency: booking.currency,
+      })),
     }
+
+    addFlightService.mutate(
+      { body: payload },
+      {
+        onSuccess: () => {
+          onSuccess?.()
+        },
+      }
+    )
   }
 
   return (
@@ -312,8 +330,8 @@ export function FlightServiceForm({ liquidationId, onSuccess, onCancel }: Flight
                 Cancelar
               </Button>
             )}
-            <Button type="submit" disabled={loading}>
-              {loading ? "Agregando..." : "Agregar Servicio"}
+            <Button type="submit" disabled={addFlightService.isPending}>
+              {addFlightService.isPending ? "Agregando..." : "Agregar Servicio"}
             </Button>
           </div>
         </form>

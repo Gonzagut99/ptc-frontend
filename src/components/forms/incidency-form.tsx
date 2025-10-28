@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { useAddIncidency } from "@/hooks/use-liquidations"
 
 interface IncidencyFormProps {
   liquidationId: number
@@ -16,7 +17,7 @@ interface IncidencyFormProps {
 }
 
 export function IncidencyForm({ liquidationId, onSuccess, onCancel }: IncidencyFormProps) {
-  const [loading, setLoading] = useState(false)
+  const addIncidency = useAddIncidency(liquidationId)
   const [formData, setFormData] = useState({
     reason: "",
     amount: "",
@@ -25,17 +26,21 @@ export function IncidencyForm({ liquidationId, onSuccess, onCancel }: IncidencyF
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setLoading(true)
 
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-      console.log("Adding incidency to liquidation:", liquidationId, formData)
-      onSuccess?.()
-    } catch (error) {
-      console.error("Error adding incidency:", error)
-    } finally {
-      setLoading(false)
+    const payload = {
+      reason: formData.reason,
+      amount: formData.amount ? parseFloat(formData.amount) : undefined,
+      incidency_date: formData.incidencyDate,
     }
+
+    addIncidency.mutate(
+      { body: payload },
+      {
+        onSuccess: () => {
+          onSuccess?.()
+        },
+      }
+    )
   }
 
   return (
@@ -87,8 +92,8 @@ export function IncidencyForm({ liquidationId, onSuccess, onCancel }: IncidencyF
                 Cancelar
               </Button>
             )}
-            <Button type="submit" disabled={loading}>
-              {loading ? "Agregando..." : "Agregar Incidencia"}
+            <Button type="submit" disabled={addIncidency.isPending}>
+              {addIncidency.isPending ? "Agregando..." : "Agregar Incidencia"}
             </Button>
           </div>
         </form>

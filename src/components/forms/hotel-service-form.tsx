@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Textarea } from "@/components/ui/textarea"
 import { Plus, Trash2 } from "lucide-react"
+import { useAddHotelService } from "@/hooks/use-liquidations"
 
 interface HotelServiceFormProps {
   liquidationId: number
@@ -29,7 +30,7 @@ interface HotelBooking {
 }
 
 export function HotelServiceForm({ liquidationId, onSuccess, onCancel }: HotelServiceFormProps) {
-  const [loading, setLoading] = useState(false)
+  const addHotelService = useAddHotelService(liquidationId)
   const [formData, setFormData] = useState({
     tariff_rate: "0.00",
     is_taxed: true,
@@ -76,17 +77,31 @@ export function HotelServiceForm({ liquidationId, onSuccess, onCancel }: HotelSe
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setLoading(true)
 
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-      console.log("Adding hotel service to liquidation:", liquidationId, { ...formData, hotel_bookings: bookings })
-      onSuccess?.()
-    } catch (error) {
-      console.error("Error adding hotel service:", error)
-    } finally {
-      setLoading(false)
+    const payload = {
+      tariff_rate: parseFloat(formData.tariff_rate),
+      is_taxed: formData.is_taxed,
+      currency: formData.currency,
+      hotel_bookings: bookings.map(booking => ({
+        check_in: booking.check_in,
+        check_out: booking.check_out,
+        hotel: booking.hotel,
+        room: booking.room,
+        room_description: booking.room_description,
+        price_by_night: parseFloat(booking.price_by_night),
+        currency: booking.currency,
+        status: booking.status,
+      })),
     }
+
+    addHotelService.mutate(
+      { body: payload },
+      {
+        onSuccess: () => {
+          onSuccess?.()
+        },
+      }
+    )
   }
 
   return (
@@ -273,8 +288,8 @@ export function HotelServiceForm({ liquidationId, onSuccess, onCancel }: HotelSe
                 Cancelar
               </Button>
             )}
-            <Button type="submit" disabled={loading}>
-              {loading ? "Agregando..." : "Agregar Servicio"}
+            <Button type="submit" disabled={addHotelService.isPending}>
+              {addHotelService.isPending ? "Agregando..." : "Agregar Servicio"}
             </Button>
           </div>
         </form>

@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { useAddPayment } from "@/hooks/use-liquidations"
 
 interface PaymentFormProps {
   liquidationId: number
@@ -16,7 +17,7 @@ interface PaymentFormProps {
 }
 
 export function PaymentForm({ liquidationId, onSuccess, onCancel }: PaymentFormProps) {
-  const [loading, setLoading] = useState(false)
+  const addPayment = useAddPayment(liquidationId)
   const [formData, setFormData] = useState({
     payment_method: "DEBIT",
     amount: "",
@@ -24,17 +25,24 @@ export function PaymentForm({ liquidationId, onSuccess, onCancel }: PaymentFormP
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setLoading(true)
 
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-      console.log("Adding payment to liquidation:", liquidationId, formData)
-      onSuccess?.()
-    } catch (error) {
-      console.error("Error adding payment:", error)
-    } finally {
-      setLoading(false)
-    }
+    addPayment.mutate(
+      {
+        body: {
+          payment_method: formData.payment_method,
+          amount: parseFloat(formData.amount),
+        },
+      },
+      {
+        onSuccess: () => {
+          onSuccess?.()
+          setFormData({
+            payment_method: "DEBIT",
+            amount: "",
+          })
+        },
+      }
+    )
   }
 
   return (
@@ -82,8 +90,8 @@ export function PaymentForm({ liquidationId, onSuccess, onCancel }: PaymentFormP
                 Cancelar
               </Button>
             )}
-            <Button type="submit" disabled={loading}>
-              {loading ? "Agregando..." : "Agregar Pago"}
+            <Button type="submit" disabled={addPayment.isPending}>
+              {addPayment.isPending ? "Agregando..." : "Agregar Pago"}
             </Button>
           </div>
         </form>

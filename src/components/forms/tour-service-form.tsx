@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Plus, Trash2 } from "lucide-react"
+import { useAddTourService } from "@/hooks/use-liquidations"
 
 interface TourServiceFormProps {
   liquidationId: number
@@ -27,7 +28,7 @@ interface Tour {
 }
 
 export function TourServiceForm({ liquidationId, onSuccess, onCancel }: TourServiceFormProps) {
-  const [loading, setLoading] = useState(false)
+  const addTourService = useAddTourService(liquidationId)
   const [formData, setFormData] = useState({
     tariff_rate: "0.00",
     is_taxed: true,
@@ -72,18 +73,30 @@ export function TourServiceForm({ liquidationId, onSuccess, onCancel }: TourServ
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setLoading(true)
 
-    try {
-      // Mock API call - replace with actual API call
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-      console.log("Adding tour service to liquidation:", liquidationId, { ...formData, tours })
-      onSuccess?.()
-    } catch (error) {
-      console.error("Error adding tour service:", error)
-    } finally {
-      setLoading(false)
+    const payload = {
+      tariff_rate: parseFloat(formData.tariff_rate),
+      is_taxed: formData.is_taxed,
+      currency: formData.currency,
+      tours: tours.map(tour => ({
+        start_date: tour.start_date,
+        end_date: tour.end_date,
+        title: tour.title,
+        price: parseFloat(tour.price),
+        place: tour.place,
+        currency: tour.currency,
+        status: tour.status,
+      })),
     }
+
+    addTourService.mutate(
+      { body: payload },
+      {
+        onSuccess: () => {
+          onSuccess?.()
+        },
+      }
+    )
   }
 
   return (
@@ -255,8 +268,8 @@ export function TourServiceForm({ liquidationId, onSuccess, onCancel }: TourServ
                 Cancelar
               </Button>
             )}
-            <Button type="submit" disabled={loading}>
-              {loading ? "Agregando..." : "Agregar Servicio"}
+            <Button type="submit" disabled={addTourService.isPending}>
+              {addTourService.isPending ? "Agregando..." : "Agregar Servicio"}
             </Button>
           </div>
         </form>

@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { useAddAdditionalService } from "@/hooks/use-liquidations"
 
 interface AdditionalServiceFormProps {
   liquidationId: number
@@ -16,7 +17,7 @@ interface AdditionalServiceFormProps {
 }
 
 export function AdditionalServiceForm({ liquidationId, onSuccess, onCancel }: AdditionalServiceFormProps) {
-  const [loading, setLoading] = useState(false)
+  const addAdditionalService = useAddAdditionalService(liquidationId)
   const [formData, setFormData] = useState({
     tariff_rate: "0.00",
     is_taxed: true,
@@ -27,17 +28,23 @@ export function AdditionalServiceForm({ liquidationId, onSuccess, onCancel }: Ad
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setLoading(true)
 
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-      console.log("Adding additional service to liquidation:", liquidationId, formData)
-      onSuccess?.()
-    } catch (error) {
-      console.error("Error adding additional service:", error)
-    } finally {
-      setLoading(false)
+    const payload = {
+      tariff_rate: parseFloat(formData.tariff_rate),
+      is_taxed: formData.is_taxed,
+      currency: formData.currency,
+      price: parseFloat(formData.price),
+      status: formData.status,
     }
+
+    addAdditionalService.mutate(
+      { body: payload },
+      {
+        onSuccess: () => {
+          onSuccess?.()
+        },
+      }
+    )
   }
 
   return (
@@ -130,8 +137,8 @@ export function AdditionalServiceForm({ liquidationId, onSuccess, onCancel }: Ad
                 Cancelar
               </Button>
             )}
-            <Button type="submit" disabled={loading}>
-              {loading ? "Agregando..." : "Agregar Servicio"}
+            <Button type="submit" disabled={addAdditionalService.isPending}>
+              {addAdditionalService.isPending ? "Agregando..." : "Agregar Servicio"}
             </Button>
           </div>
         </form>
