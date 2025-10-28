@@ -207,7 +207,11 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /**
+         * Obtener todos los clientes
+         * @description Obtiene una lista completa de todos los clientes sin paginación.
+         */
+        get: operations["getAllCustomers"];
         put?: never;
         /**
          * Crear un nuevo cliente
@@ -705,8 +709,8 @@ export interface components {
             incidencyStatus?: "PENDING" | "APPROVED" | "REJECTED";
             /** Format: int64 */
             liquidationId?: number;
-            approved?: boolean;
             pending?: boolean;
+            approved?: boolean;
         };
         DLiquidation: {
             /** Format: int64 */
@@ -740,9 +744,9 @@ export interface components {
             staffId?: number;
             staffOnCharge?: components["schemas"]["DStaff"];
             incidencies?: components["schemas"]["DIncidency"][];
+            overdue?: boolean;
             /** Format: float */
             totalPaid?: number;
-            overdue?: boolean;
             /** Format: float */
             remainingAmount?: number;
         };
@@ -1307,6 +1311,35 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["DLiquidation"];
+                };
+            };
+        };
+    };
+    getAllCustomers: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Lista de clientes obtenida exitosamente */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["DCustomer"][];
+                };
+            };
+            /** @description Error interno del servidor */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
                 };
             };
         };

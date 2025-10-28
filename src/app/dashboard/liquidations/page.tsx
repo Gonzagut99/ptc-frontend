@@ -115,9 +115,19 @@ export default function LiquidationsPage() {
     return (
       <div className="space-y-6">
         <div className="flex items-center justify-center p-8">
-          <div className="text-center">
+          <div className="text-center space-y-4">
             <h2 className="text-2xl font-bold text-destructive">Error al cargar liquidaciones</h2>
-            <p className="text-muted-foreground mt-2">{(error as any)?.message || 'Ocurrió un error inesperado'}</p>
+            <p className="text-muted-foreground">
+              {(error as any)?.message || 'Ocurrió un error inesperado'}
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Posible causa: Hay liquidaciones con datos incompletos en la base de datos.
+              <br />
+              Por favor, verifica que todas las liquidaciones tengan un cliente asignado.
+            </p>
+            <Button onClick={() => refetch()} variant="outline">
+              Reintentar
+            </Button>
           </div>
         </div>
       </div>

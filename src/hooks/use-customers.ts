@@ -27,6 +27,19 @@ export function useCustomers() {
 }
 
 /**
+ * Hook para obtener todos los clientes (sin paginación, para selects)
+ */
+export function useAllCustomers() {
+  const query = backend.useQuery("get", "/clientes");
+
+  return {
+    customers: query.data || [],
+    isLoading: query.isLoading,
+    error: query.error,
+  };
+}
+
+/**
  * Hook para crear un nuevo cliente
  */
 export function useCreateCustomer() {

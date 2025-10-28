@@ -49,6 +49,25 @@ export function useStaffByRole(role: string) {
 }
 
 /**
+ * Hook para obtener todo el staff (sin paginación, para selects)
+ */
+export function useAllStaff() {
+  const query = backend.useQuery("get", "/staff/paginados", {
+    params: {
+      query: {
+        requestDto: { page: 0, size: 1000 },
+      },
+    },
+  });
+
+  return {
+    staff: query.data?.content || [],
+    isLoading: query.isLoading,
+    error: query.error,
+  };
+}
+
+/**
  * Hook para crear un nuevo staff (requiere userId existente)
  */
 export function useCreateStaff() {

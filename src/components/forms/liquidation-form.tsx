@@ -2,14 +2,15 @@
 
 import type React from "react"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { getCustomers, getStaff } from "@/lib/api-client"
-import type { DCustomer, DStaff } from "@/lib/api-types"
+import { useAllCustomers } from "@/hooks/use-customers"
+import { useAllStaff } from "@/hooks/use-staff"
+import { useCreateLiquidation } from "@/hooks/use-liquidations"
 
 interface LiquidationFormProps {
   onSuccess?: () => void
@@ -17,9 +18,14 @@ interface LiquidationFormProps {
 }
 
 export function LiquidationForm({ onSuccess, onCancel }: LiquidationFormProps) {
-  const [loading, setLoading] = useState(false)
-  const [customers, setCustomers] = useState<DCustomer[]>([])
-  const [staff, setStaff] = useState<DStaff[]>([])
+  const { customers, isLoading: loadingCustomers } = useAllCustomers()
+  const { staff, isLoading: loadingStaff } = useAllStaff()
+  const createLiquidation = useCreateLiquidation()
+
+  // Debug: Ver qué datos se están cargando
+  console.log("Customers cargados:", customers.length, customers)
+  console.log("Staff cargado:", staff.length, staff)
+
   const [formData, setFormData] = useState({
     customer_id: "",
     staff_id: "",
@@ -28,29 +34,42 @@ export function LiquidationForm({ onSuccess, onCancel }: LiquidationFormProps) {
     companion: "1",
   })
 
-  useEffect(() => {
-    const loadData = async () => {
-      const [customersData, staffData] = await Promise.all([getCustomers(0, 100), getStaff(0, 100)])
-      setCustomers(customersData.content || [])
-      setStaff(staffData.content || [])
-    }
-    loadData()
-  }, [])
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setLoading(true)
 
-    try {
-      // Mock API call - replace with actual API call
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-      console.log("Creating liquidation:", formData)
-      onSuccess?.()
-    } catch (error) {
-      console.error("Error creating liquidation:", error)
-    } finally {
-      setLoading(false)
+    const payload = {
+      customer_id: parseInt(formData.customer_id),
+      staff_id: parseInt(formData.staff_id),
+      currency_rate: parseFloat(formData.currency_rate),
+      payment_deadline: new Date(formData.payment_deadline).toISOString(),
+      companion: parseInt(formData.companion),
     }
+
+    console.log("Enviando liquidación:", payload)
+    console.log("Form data original:", formData)
+
+    createLiquidation.mutate(
+      {
+        body: payload,
+      },
+      {
+        onSuccess: (data) => {
+          console.log("Liquidación creada exitosamente:", data)
+          onSuccess?.()
+          // Reset form
+          setFormData({
+            customer_id: "",
+            staff_id: "",
+            currency_rate: "3.75",
+            payment_deadline: "",
+            companion: "1",
+          })
+        },
+        onError: (error) => {
+          console.error("Error al crear liquidación:", error)
+        },
+      }
+    )
   }
 
   return (
@@ -71,11 +90,21 @@ export function LiquidationForm({ onSuccess, onCancel }: LiquidationFormProps) {
                 <SelectValue placeholder="Seleccione un cliente" />
               </SelectTrigger>
               <SelectContent>
-                {customers.map((customer) => (
-                  <SelectItem key={customer.id} value={String(customer.id)}>
-                    {customer.firstName} {customer.lastName} - {customer.idDocumentNumber}
+                {loadingCustomers ? (
+                  <SelectItem value="loading" disabled>
+                    Cargando clientes...
                   </SelectItem>
-                ))}
+                ) : customers.length === 0 ? (
+                  <SelectItem value="empty" disabled>
+                    No hay clientes disponibles
+                  </SelectItem>
+                ) : (
+                  customers.map((customer) => (
+                    <SelectItem key={customer.id} value={String(customer.id)}>
+                      {customer.firstName} {customer.lastName} - {customer.idDocumentNumber}
+                    </SelectItem>
+                  ))
+                )}
               </SelectContent>
             </Select>
           </div>
@@ -87,11 +116,21 @@ export function LiquidationForm({ onSuccess, onCancel }: LiquidationFormProps) {
                 <SelectValue placeholder="Seleccione personal" />
               </SelectTrigger>
               <SelectContent>
-                {staff.map((s) => (
-                  <SelectItem key={s.id} value={String(s.id)}>
-                    {s.user?.userName || s.user?.email} - {s.role}
+                {loadingStaff ? (
+                  <SelectItem value="loading" disabled>
+                    Cargando personal...
                   </SelectItem>
-                ))}
+                ) : staff.length === 0 ? (
+                  <SelectItem value="empty" disabled>
+                    No hay personal disponible
+                  </SelectItem>
+                ) : (
+                  staff.map((s) => (
+                    <SelectItem key={s.id} value={String(s.id)}>
+                      {s.user?.userName || s.user?.email} - {s.role}
+                    </SelectItem>
+                  ))
+                )}
               </SelectContent>
             </Select>
           </div>
@@ -141,8 +180,17 @@ export function LiquidationForm({ onSuccess, onCancel }: LiquidationFormProps) {
                 Cancelar
               </Button>
             )}
-            <Button type="submit" disabled={loading || !formData.customer_id || !formData.staff_id}>
-              {loading ? "Creando..." : "Crear Liquidación"}
+            <Button
+              type="submit"
+              disabled={
+                createLiquidation.isPending ||
+                loadingCustomers ||
+                loadingStaff ||
+                !formData.customer_id ||
+                !formData.staff_id
+              }
+            >
+              {createLiquidation.isPending ? "Creando..." : "Crear Liquidación"}
             </Button>
           </div>
         </form>

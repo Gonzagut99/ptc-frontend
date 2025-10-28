@@ -14,13 +14,10 @@ export function useUsers() {
   const query = backend.useQuery("get", "/users/paginados", {
     params: {
       query: {
-        page: page,
-        size: size,
-      } as unknown as {
         requestDto: {
-          page: number;
-          size: number;
-        };
+          page: page,
+          size: size,
+        },
       },
     },
   });
