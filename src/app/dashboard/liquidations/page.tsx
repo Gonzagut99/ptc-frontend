@@ -28,7 +28,7 @@ const paymentStatusColors: Record<string, "default" | "secondary" | "destructive
 export default function LiquidationsPage() {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [selectedLiquidation, setSelectedLiquidation] = useState<LiquidationWithDetailsDto | null>(null)
-  const { query, setPagination } = useLiquidations()
+  const { query, setPagination, page, size } = useLiquidations()
 
   const { data: response, isLoading, isError, error, refetch } = query
 
@@ -36,8 +36,8 @@ export default function LiquidationsPage() {
   const pageMetadata = response?.page
   const totalPages = pageMetadata?.totalPages || 0
   const totalElements = pageMetadata?.totalElements || 0
-  const pageIndex = pageMetadata?.number || 0
-  const pageSize = pageMetadata?.size || 10
+  const pageIndex = page
+  const pageSize = size
 
   const columns: ColumnDef<LiquidationWithDetailsDto>[] = [
     {
@@ -108,6 +108,7 @@ export default function LiquidationsPage() {
   }
 
   const handlePageChange = (newPageIndex: number) => {
+    console.log('handlePageChange called with:', newPageIndex, 'current pageSize:', pageSize);
     setPagination(newPageIndex, pageSize)
   }
 

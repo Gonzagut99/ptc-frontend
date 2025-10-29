@@ -28,6 +28,7 @@ export function PaymentForm({ liquidationId, onSuccess, onCancel }: PaymentFormP
 
     addPayment.mutate(
       {
+        params: { path: { liquidationId } },
         body: {
           payment_method: formData.payment_method,
           amount: parseFloat(formData.amount),

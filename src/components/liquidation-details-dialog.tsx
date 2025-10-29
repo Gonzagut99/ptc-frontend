@@ -124,7 +124,7 @@ export function LiquidationDetailsDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[calc(100vw-5rem)] max-w-[calc(100vw-5rem)] max-h-[90vh] overflow-y-auto">
+      <DialogContent className=" !max-w-[calc(100vw-5rem)] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center justify-between">
             <span>Liquidación #{liquidationData.id}</span>

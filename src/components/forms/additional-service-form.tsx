@@ -38,7 +38,10 @@ export function AdditionalServiceForm({ liquidationId, onSuccess, onCancel }: Ad
     }
 
     addAdditionalService.mutate(
-      { body: payload },
+      { 
+        params: { path: { liquidationId } },
+        body: payload 
+      },
       {
         onSuccess: () => {
           onSuccess?.()

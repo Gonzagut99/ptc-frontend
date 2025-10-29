@@ -1,47 +1,63 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { useAddIncidency } from "@/hooks/use-liquidations"
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { useAddIncidency } from "@/hooks/use-liquidations";
 
 interface IncidencyFormProps {
-  liquidationId: number
-  onSuccess?: () => void
-  onCancel?: () => void
+  liquidationId: number;
+  onSuccess?: () => void;
+  onCancel?: () => void;
 }
 
-export function IncidencyForm({ liquidationId, onSuccess, onCancel }: IncidencyFormProps) {
-  const addIncidency = useAddIncidency(liquidationId)
+export function IncidencyForm({
+  liquidationId,
+  onSuccess,
+  onCancel,
+}: IncidencyFormProps) {
+  const addIncidency = useAddIncidency(liquidationId);
   const [formData, setFormData] = useState({
     reason: "",
     amount: "",
-    incidencyDate: new Date().toISOString().split("T")[0] + "T" + new Date().toTimeString().slice(0, 5),
-  })
+    incidencyDate:
+      new Date().toISOString().split("T")[0] +
+      "T" +
+      new Date().toTimeString().slice(0, 5),
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
     const payload = {
       reason: formData.reason,
       amount: formData.amount ? parseFloat(formData.amount) : undefined,
-      incidency_date: formData.incidencyDate,
-    }
+      incidencyDate: formData.incidencyDate,
+    };
 
     addIncidency.mutate(
-      { body: payload },
+      {
+        params: { path: { liquidationId } },
+        body: payload,
+      },
       {
         onSuccess: () => {
-          onSuccess?.()
+          onSuccess?.();
         },
       }
-    )
-  }
+    );
+  };
 
   return (
     <Card>
@@ -57,7 +73,9 @@ export function IncidencyForm({ liquidationId, onSuccess, onCancel }: IncidencyF
               id="reason"
               required
               value={formData.reason}
-              onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, reason: e.target.value })
+              }
               placeholder="Describa la incidencia..."
               rows={3}
             />
@@ -70,7 +88,9 @@ export function IncidencyForm({ liquidationId, onSuccess, onCancel }: IncidencyF
               type="number"
               step="0.01"
               value={formData.amount}
-              onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, amount: e.target.value })
+              }
               placeholder="0.00"
             />
           </div>
@@ -82,7 +102,9 @@ export function IncidencyForm({ liquidationId, onSuccess, onCancel }: IncidencyF
               type="datetime-local"
               required
               value={formData.incidencyDate}
-              onChange={(e) => setFormData({ ...formData, incidencyDate: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, incidencyDate: e.target.value })
+              }
             />
           </div>
 
@@ -99,5 +121,5 @@ export function IncidencyForm({ liquidationId, onSuccess, onCancel }: IncidencyF
         </form>
       </CardContent>
     </Card>
-  )
+  );
 }

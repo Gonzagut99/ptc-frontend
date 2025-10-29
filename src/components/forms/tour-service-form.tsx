@@ -90,7 +90,10 @@ export function TourServiceForm({ liquidationId, onSuccess, onCancel }: TourServ
     }
 
     addTourService.mutate(
-      { body: payload },
+      { 
+        params: { path: { liquidationId } },
+        body: payload 
+      },
       {
         onSuccess: () => {
           onSuccess?.()

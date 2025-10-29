@@ -95,7 +95,10 @@ export function HotelServiceForm({ liquidationId, onSuccess, onCancel }: HotelSe
     }
 
     addHotelService.mutate(
-      { body: payload },
+      { 
+        params: { path: { liquidationId } },
+        body: payload 
+      },
       {
         onSuccess: () => {
           onSuccess?.()

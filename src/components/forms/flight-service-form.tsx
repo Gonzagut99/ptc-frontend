@@ -106,7 +106,10 @@ export function FlightServiceForm({ liquidationId, onSuccess, onCancel }: Flight
     }
 
     addFlightService.mutate(
-      { body: payload },
+      { 
+        params: { path: { liquidationId } },
+        body: payload 
+      },
       {
         onSuccess: () => {
           onSuccess?.()
