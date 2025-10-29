@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { backend } from "@/lib/backend";
 import { usePagination } from "./use-pagination";
@@ -10,6 +11,7 @@ import { toast } from "sonner";
  */
 export function useLiquidations() {
   const { page, size, setPagination, resetPagination } = usePagination();
+  const queryClient = useQueryClient();
 
   console.log("useLiquidations - page:", page, "size:", size);
 
@@ -22,6 +24,14 @@ export function useLiquidations() {
   });
 
   console.log("Query data:", query.data);
+
+  // Invalidar la query cuando cambien page o size para forzar refetch
+  useEffect(() => {
+    console.log("Invalidating queries due to page/size change");
+    queryClient.invalidateQueries({
+      queryKey: ["get", "/liquidations/paginated"],
+    });
+  }, [page, size, queryClient]);
 
   return {
     query,

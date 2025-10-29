@@ -76,8 +76,17 @@ function customQuerySerializer(params: Record<string, any>): string {
   Object.entries(params).forEach(([key, value]) => {
     if (value !== undefined && value !== null) {
       if (typeof value === "object" && !Array.isArray(value)) {
-        // Serialize nested objects as JSON string
-        searchParams.append(key, JSON.stringify(value));
+        // For requestDto, flatten the object properties
+        if (key === "requestDto") {
+          Object.entries(value).forEach(([nestedKey, nestedValue]) => {
+            if (nestedValue !== undefined && nestedValue !== null) {
+              searchParams.append(nestedKey, String(nestedValue));
+            }
+          });
+        } else {
+          // Serialize other nested objects as JSON string
+          searchParams.append(key, JSON.stringify(value));
+        }
       } else {
         searchParams.append(key, String(value));
       }
